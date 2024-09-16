@@ -34,6 +34,6 @@ rosdep install --from-paths src --ignore-src -r
 colcon build --symlink-install
 ```
 
-4. Follow instructions found in [CARLA Automatic brakeing Feature Demo](./docs/carla_abf_demo.md) to run the demo
+4. Follow instructions found in [CARLA Automatic braking Feature Demo](./docs/carla_abf_demo.md) to run the demo
 
 
