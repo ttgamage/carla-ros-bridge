@@ -24,7 +24,7 @@ You will need to fulfill the following software requirements before using the RO
             export PYTHONPATH=$PYTHONPATH:$CARLA_ROOT/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg:$CARLA_ROOT/PythonAPI/carla
         ```
 - SCENARIO RUNNER
-    - Install the matching Scenario Runner version (e.g. [v0.9.15](https://github.com/carla-simulator/scenario_runner/releases/tag/v0.9.15)) using the installation instructions found [here](https://carla-scenariorunner.readthedocs.io/en/latest/getting_scenariorunner/)
+    - Install the matching Scenario Runner version (e.g. [v0.9.15](https://github.com/carla-simulator/scenario_runner/releases/tag/v0.9.15)) using the installation instructions found [here](https://scenario-runner.readthedocs.io/en/latest/getting_scenariorunner/)
     - Set `SCENARIO_RUNNER_ROOT` environmental variable to your installation directory in `{.zshrc|.bashrc}`
         ```sh
             export SCENARIO_RUNNER_ROOT=$HOME/Workspace/scenario_runner
