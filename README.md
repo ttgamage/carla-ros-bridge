@@ -9,8 +9,7 @@ This ROS package is a modified fork of the [carla-simulator/ros-bridge](https://
 - Scenario Runner Version: 0.9.15
 - ROS Version: Humble
 - **NOTE**: All testing were peformed using Python 3.10. The default CARLA PythonAPI only supports Python 2.7 and 3.7 (and 3.8 by extension). Updated `.whl` and `.egg` files for Python 3.10 can be found at [https://github.com/gezp/carla_ros/releases/](https://github.com/gezp/carla_ros/releases/).
-- **UPDATE**: Starting with v0.9.16/0.10.0 CARLA now provides a natively integrated ros bridge. While untested, you can find newer `.whl` files for Python 3.10, 3.12, 3.14 at [https://github.com/ttgamage/carla-whl-builder/releases](https://github.com/ttgamage/carla-whl-builder/releases).
-
+- > **⚠️ UPDATE (07/26)**: Starting with v0.9.16, CARLA now supports a natively integrated ros bridge. I've moved on to the native ros bridge, but if your workflow still involves a 3rd party ros bridge, try using newer `.whl` files for Python 3.10, 3.12, 3.14 found at [https://github.com/ttgamage/carla-whl-builder/releases](https://github.com/ttgamage/carla-whl-builder/releases). There are a few minor differences in more recent ROS2 versions but it's possible to run carla ros bridge on newer OS releases/python versions with a bit of an effort. `podman/docker` is your friend. :)
 ### Screenshot of Carla AD Demo in Action 
 
 ![rviz setup](./docs/images/ad_demo.png "AD Demo")
