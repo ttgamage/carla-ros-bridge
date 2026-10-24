@@ -72,7 +72,7 @@ class ObjectSensor(PseudoActor):
         :return:
         """
         ros_objects = ObjectArray()
-        ros_objects.header = self.get_msg_header(frame_id="map", timestamp=timestamp)
+        ros_objects.header = self.get_msg_header(frame_id=self.node.parameters['world_frame'], timestamp=timestamp)
         for actor_id in self.actor_list.keys():
             # currently only Vehicles and Walkers are added to the object array
             if self.parent is None or self.parent.uid != actor_id:

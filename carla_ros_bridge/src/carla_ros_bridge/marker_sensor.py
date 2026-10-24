@@ -116,7 +116,7 @@ class MarkerSensor(PseudoActor):
         return "sensor.pseudo.markers"
 
     def _get_marker_from_environment_object(self, environment_object):
-        marker = Marker(header=self.get_msg_header(frame_id="map"))
+        marker = Marker(header=self.get_msg_header(frame_id=self.node.parameters['world_frame']))
         marker.ns = str(environment_object.type)
         marker.id = next(self.static_id_gen)
 

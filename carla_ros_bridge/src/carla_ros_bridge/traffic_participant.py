@@ -70,7 +70,7 @@ class TrafficParticipant(Actor):
 
         :return:
         """
-        obj = Object(header=self.get_msg_header("map"))
+        obj = Object(header=self.get_msg_header(self.node.parameters['world_frame']))
         # ID
         obj.id = self.get_id()
         # Pose
@@ -130,7 +130,7 @@ class TrafficParticipant(Actor):
         :return:
         visualization_msgs.msg.Marker
         """
-        marker = Marker(header=self.get_msg_header(frame_id="map", timestamp=timestamp))
+        marker = Marker(header=self.get_msg_header(frame_id=self.node.parameters['world_frame'], timestamp=timestamp))
         marker.color = self.get_marker_color()
         marker.color.a = 0.3
         marker.id = self.get_id()

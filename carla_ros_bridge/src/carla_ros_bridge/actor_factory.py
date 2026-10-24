@@ -25,8 +25,10 @@ from carla_ros_bridge.actor_control import ActorControl
 from carla_ros_bridge.actor_list_sensor import ActorListSensor
 from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera, DVSCamera
 from carla_ros_bridge.collision_sensor import CollisionSensor
+from carla_ros_bridge.cone_ground_truth_sensor import ConeGroundTruthSensor
 from carla_ros_bridge.ego_vehicle import EgoVehicle
 from carla_ros_bridge.gnss import Gnss
+from carla_ros_bridge.ground_truth_sensor import GroundTruthSensor
 from carla_ros_bridge.imu import ImuSensor
 from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
 from carla_ros_bridge.lidar import Lidar, SemanticLidar
@@ -36,6 +38,7 @@ from carla_ros_bridge.odom_sensor import OdometrySensor
 from carla_ros_bridge.opendrive_sensor import OpenDriveSensor
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from carla_ros_bridge.radar import Radar
+from carla_ros_bridge.rgb_lidar_sensor import LIDAR_ROLE, RgbLidarSensor
 from carla_ros_bridge.rss_sensor import RssSensor
 from carla_ros_bridge.sensor import Sensor
 from carla_ros_bridge.spectator import Spectator
@@ -45,6 +48,7 @@ from carla_ros_bridge.traffic import Traffic, TrafficLight
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.walker import Walker
+from carla_ros_bridge.ouster_lidar import OUSTER_ROLE_PREFIX, OusterLidar
 
 # to generate a random spawning position or vehicles
 import random
@@ -110,6 +114,10 @@ class ActorFactory(object):
         self.lock.acquire()
         for actor_id in spawned_actors:
             carla_actor = self.world.get_actor(actor_id)
+            # the RGB LiDAR rig (rgb_lidar, rgb_lidar_cam_*) is read only by sensor.pseudo.rgb_lidar
+            if isinstance(carla_actor, carla.Sensor) and \
+                    carla_actor.attributes.get("role_name", "").startswith(LIDAR_ROLE):
+                continue
             if self.node.parameters["register_all_sensors"] or not isinstance(carla_actor, carla.Sensor):
                 self._create_object_from_actor(carla_actor)
 
@@ -127,7 +135,10 @@ class ActorFactory(object):
                     carla_actor = self.world.get_actor(actor_id)
                     self._create_object_from_actor(carla_actor, req)
                 elif task_type == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
-                    self._create_object(actor_id, req.type, req.id, req.attach_to, req.transform)
+                    try:
+                        self._create_object(actor_id, req.type, req.id, req.attach_to, req.transform)
+                    except RuntimeError as e:  # would otherwise leave self.lock acquired
+                        self.node.logerr("Spawning {} failed: {}".format(req.type, e))
                 elif task_type == ActorFactory.TaskType.DESTROY_ACTOR:
                     self._destroy_object(actor_id, delete_actor=True)
 
@@ -261,6 +272,9 @@ class ActorFactory(object):
         if actor_id not in self.actors:
             return
         actor = self.actors[actor_id]
+        # pseudo sensors attached to it go with it (CARLA children are destroyed by their own event)
+        for child in [a for a in self.actors.values() if a.parent is actor and not isinstance(a, Actor)]:
+            self._destroy_object(child.uid, delete_actor=False)
         del self.actors[actor_id]
         carla_actor = None
         if isinstance(actor, Actor):
@@ -299,6 +313,12 @@ class ActorFactory(object):
                                    parent=parent,
                                    node=self.node)
 
+        elif type_id == GroundTruthSensor.get_blueprint_name():
+            actor = GroundTruthSensor(uid=uid,
+                                      name=name,
+                                      parent=parent,
+                                      node=self.node)
+
         elif type_id == SpeedometerSensor.get_blueprint_name():
             actor = SpeedometerSensor(uid=uid,
                                       name=name,
@@ -328,6 +348,21 @@ class ActorFactory(object):
                 node=self.node,
                 actor_list=self.actors,
             )
+
+        elif type_id == ConeGroundTruthSensor.get_blueprint_name():
+            actor = ConeGroundTruthSensor(
+                uid=uid,
+                name=name,
+                parent=parent,
+                node=self.node,
+                actor_list=self.actors,
+            )
+
+        elif type_id == RgbLidarSensor.get_blueprint_name():
+            actor = RgbLidarSensor(uid=uid,
+                                   name=name,
+                                   parent=parent,
+                                   node=self.node)
 
         elif type_id == TrafficLightsSensor.get_blueprint_name():
             actor = TrafficLightsSensor(
@@ -386,8 +421,12 @@ class ActorFactory(object):
                                    carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
                 if carla_actor.type_id.endswith("sensor.lidar.ray_cast"):
-                    actor = Lidar(uid, name, parent, spawn_pose, self.node,
-                                  carla_actor, self.sync_mode)
+                    if name.startswith(OUSTER_ROLE_PREFIX):
+                        actor = OusterLidar(uid, name, parent, spawn_pose, self.node,
+                                            carla_actor, self.sync_mode)
+                    else:
+                        actor = Lidar(uid, name, parent, spawn_pose, self.node,
+                                      carla_actor, self.sync_mode)
                 elif carla_actor.type_id.endswith(
                         "sensor.lidar.ray_cast_semantic"):
                     actor = SemanticLidar(uid, name, parent, spawn_pose,

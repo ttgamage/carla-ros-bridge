@@ -76,6 +76,6 @@ class TFSensor(PseudoActor):
             return
 
         self._tf_broadcaster.sendTransform(TransformStamped(
-            header=self.get_msg_header("map", timestamp=timestamp),
+            header=self.get_msg_header(self.node.parameters['world_frame'], timestamp=timestamp),
             child_frame_id=self.parent.get_prefix(),
             transform=transform))

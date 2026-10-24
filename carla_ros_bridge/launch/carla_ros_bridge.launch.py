@@ -56,6 +56,11 @@ def generate_launch_description():
             #               "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"],
             description='Role names to identify ego vehicles. '
         ),
+        launch.actions.DeclareLaunchArgument(
+            name='world_frame',
+            default_value='carla_world',
+            description='TF frame of the CARLA world. Kept distinct from "map", which belongs to the perception stack'
+        ),
         launch_ros.actions.Node(
             package='carla_ros_bridge',
             executable='bridge',
@@ -96,6 +101,9 @@ def generate_launch_description():
                 },
                 {
                     'ego_vehicle_role_name': launch.substitutions.LaunchConfiguration('ego_vehicle_role_name')
+                },
+                {
+                    'world_frame': launch.substitutions.LaunchConfiguration('world_frame')
                 }
             ]
         )

@@ -51,9 +51,10 @@ class DebugHelper(object):
         Receive markers from ROS and apply in CARLA
         """
         for marker in marker_array.markers:
-            if marker.header.frame_id != "map":
-                self.node.logwarn("Could not draw marker in frame '{}'. Only 'map' supported.".format(
-                    marker.header.frame_id))
+            world_frame = self.node.parameters['world_frame']
+            if marker.header.frame_id != world_frame:
+                self.node.logwarn("Could not draw marker in frame '{}'. Only '{}' supported.".format(
+                    marker.header.frame_id, world_frame))
                 continue
             lifetime = -1.
             if marker.lifetime:
